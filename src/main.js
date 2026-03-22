@@ -418,8 +418,9 @@ function initImportModal() {
       logEl.textContent = log.join('\n');
 
       if (municipalities.length === 0) {
-        status.textContent = '新規データなし（全て既存）';
+        status.textContent = '⚠ 新規データなし — ログを確認してください';
         status.style.color = 'var(--accent-yellow)';
+        logEl.hidden = false;
       } else {
         // データを追加して再描画
         allMunicipalities.push(...municipalities);
@@ -431,7 +432,8 @@ function initImportModal() {
         status.style.color = 'var(--accent-green)';
       }
     } catch (err) {
-      logEl.textContent = String(err);
+      logEl.hidden = false;
+      logEl.textContent += '\n\n' + String(err) + '\n' + (err.stack || '');
       status.textContent = '❌ エラーが発生しました';
       status.style.color = 'var(--accent-red)';
       console.error(err);
