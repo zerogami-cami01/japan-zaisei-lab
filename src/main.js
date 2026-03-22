@@ -70,9 +70,13 @@ function showDetailView(id) {
 }
 
 function showPanel(name) {
-  document.querySelectorAll('.panel').forEach(p => { p.style.display = 'none'; });
+  document.querySelectorAll('.panel').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
   const panel = document.getElementById(`panel-${name}`);
   if (panel) {
+    panel.classList.add('active');
     panel.style.display = (name === 'loading' || name === 'empty') ? 'flex' : 'block';
   }
 }
