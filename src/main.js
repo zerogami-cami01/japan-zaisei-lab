@@ -431,6 +431,7 @@ function initImportModal() {
         const newOnes = [...importedMap.values()];
         allMunicipalities.push(...newOnes);
 
+        modal.hidden = true;
         currentPref = null;
         rebuildFilterBar();
         renderBrowse();
