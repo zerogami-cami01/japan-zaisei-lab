@@ -185,10 +185,12 @@ function renderBrowse() {
 function renderDetail(item) {
   const container = document.getElementById('panel-detail');
 
-  // Calculate derived values
-  const r4SainyuDiff = item.sainyuGokei - item.r4_sainyuGokei;
-  const r4SaishutsuDiff = item.saishutsuGokei - item.r4_saishutsuGokei;
-  const jisshitsuShushi = item.sainyuGokei - item.saishutsuGokei;
+  const jisshitsuShushi = (item.sainyuGokei || 0) - (item.saishutsuGokei || 0);
+  const zr = item.zaiseiRyoku;
+
+  const shushiSection = renderShushiSection(item);
+  const jinkouSection = renderJinkouSangyo(item);
+  const kiboSection   = renderZaiseiKiboTable(item);
 
   const html = `
     ${renderDetailHeader(item)}
@@ -214,13 +216,19 @@ function renderDetail(item) {
       }),
       renderKpiCard({
         label: '財政力指数',
-        value: item.zaiseiRyoku.toFixed(2),
-        valueClass: item.zaiseiRyoku >= 1.0 ? 'green' : item.zaiseiRyoku >= 0.7 ? '' : 'red',
+        value: zr != null ? zr.toFixed(2) : '―',
+        valueClass: zr == null ? '' : zr >= 1.0 ? 'green' : zr >= 0.7 ? '' : 'red',
       }),
     ])}
 
+    ${shushiSection ? `<div class="section-title">収支状況</div>${shushiSection}` : ''}
+
     <div class="section-title">財政指標</div>
     ${renderZaiseiShihyoTable(item)}
+
+    ${kiboSection ? `<div class="section-title">財政規模</div>${kiboSection}` : ''}
+
+    ${jinkouSection ? `<div class="section-title">人口・産業構造</div>${jinkouSection}` : ''}
 
     <div class="section-title">歳入内訳</div>
     ${renderSainyuTable(item)}
@@ -230,6 +238,9 @@ function renderDetail(item) {
 
     <div class="section-title">歳出（目的別）</div>
     ${renderMokutekiTable(item)}
+
+    <div class="section-title">歳出（性質別）</div>
+    ${renderSeishitsuTable(item)}
 
     <div class="section-title">チャート</div>
     <div class="charts-row">
@@ -330,15 +341,19 @@ function renderCharts(item) {
   const seishitsuEl = document.getElementById('chart-seishitsu');
   if (seishitsuEl && window.echarts) {
     const sc = echarts.init(seishitsuEl, null, { renderer: 'canvas' });
-    const labels = ['人件費', '物件費', '移転的支出', '公債費', '補助費', 'その他'];
-    const values = [
-      item.saishuBySeishitsu.jinken,
-      item.saishuBySeishitsu.bukken,
-      item.saishuBySeishitsu.iten,
-      item.saishuBySeishitsu.kokkosai,
-      item.saishuBySeishitsu.hojo,
-      item.saishuBySeishitsu.sonota,
-    ];
+    const seRaw = [
+      { label: '人件費',         value: item.saishuBySeishitsu.jinken },
+      { label: '物件費',         value: item.saishuBySeishitsu.bukken },
+      { label: '扶助費',         value: item.saishuBySeishitsu.iten },
+      { label: '公債費',         value: item.saishuBySeishitsu.kokkosai },
+      { label: '補助費等',       value: item.saishuBySeishitsu.hojo },
+      { label: '維持補修費',     value: item.saishuBySeishitsu.ijiHoshu },
+      { label: '繰出金',         value: item.saishuBySeishitsu.kuridashi },
+      { label: '普通建設事業費', value: item.saishuBySeishitsu.fututsuKen },
+      { label: 'その他',         value: item.saishuBySeishitsu.sonota },
+    ].filter(d => d.value > 0);
+    const labels = seRaw.map(d => d.label);
+    const values = seRaw.map(d => d.value);
     sc.setOption({
       ...baseOpts,
       color: [cyan],

@@ -56,6 +56,33 @@ const COLS = {
   iten:     ['扶助費', '移転的支出'],
   kokkosai: ['公債費'],
   hojo:     ['補助費等', '補助費'],
+  ijiHoshu: ['維持補修費'],
+  kuridashi: ['繰出金'],
+  fututsuKen: ['普通建設事業費'],
+  saigaiKen:  ['災害復旧事業費'],
+  tsumitate:  ['積立金'],
+
+  // Additional (1) 概況 columns
+  jinkouNipponji:      ['うち日本人'],
+  jinkouKokusei:       ['国勢調査人口', '国調人口'],
+  sangyo1:             ['第１次', '第1次'],
+  sangyo2:             ['第２次', '第2次'],
+  sangyo3:             ['第３次', '第3次'],
+  kijunJuyou:          ['基準財政需要額'],
+  kijunShunyu:         ['基準財政収入額'],
+  hyojunKibo:          ['標準財政規模'],
+  jisshitsuShushiHi:   ['実質収支比率'],
+  kosaiHiHi:           ['公債費負担比率'],
+  jisshitsuAkaji:      ['実質赤字比率'],
+  renketsuAkaji:       ['連結実質赤字比率'],
+  sainyuSaishutsuSa:   ['歳入歳出差引額', '歳入歳出差引'],
+  yokunen:             ['翌年度に繰り越すべき財源', '翌年度繰越'],
+  jisshitsuShushiGaku: ['実質収支(C', '(C)-(D)', '実質収支(E'],
+  tannenDo:            ['単年度収支'],
+  tsumitateKin:        ['積立金(G)', '積立金'],
+  kuriageShokkan:      ['繰上償還金'],
+  tsumitateTorikuzushi: ['積立金取崩し'],
+  jisshitsuTannen:     ['実質単年度収支', '(F)+(G)+(H)-(I)'],
 };
 
 const PREF_MAP = {
@@ -302,6 +329,27 @@ function parseGaikyo(headers, rows, unit, log) {
   const idxKosai = ci('kosaiHi'), idxRainen = ci('rainendo');
   const idxR4S = ci('r4Sainyu'), idxR4E = ci('r4Saishutsu');
 
+  const idxJinkouNipponji      = ci('jinkouNipponji');
+  const idxJinkouKokusei       = ci('jinkouKokusei');
+  const idxSangyo1             = ci('sangyo1');
+  const idxSangyo2             = ci('sangyo2');
+  const idxSangyo3             = ci('sangyo3');
+  const idxKijunJuyou          = ci('kijunJuyou');
+  const idxKijunShunyu         = ci('kijunShunyu');
+  const idxHyojunKibo          = ci('hyojunKibo');
+  const idxJisshitsuShushiHi   = ci('jisshitsuShushiHi');
+  const idxKosaiHiHi           = ci('kosaiHiHi');
+  const idxJisshitsuAkaji      = ci('jisshitsuAkaji');
+  const idxRenketsuAkaji       = ci('renketsuAkaji');
+  const idxSainyuSaishutsuSa   = ci('sainyuSaishutsuSa');
+  const idxYokunen             = ci('yokunen');
+  const idxJisshitsuShushiGaku = ci('jisshitsuShushiGaku');
+  const idxTannenDo            = ci('tannenDo');
+  const idxTsumitateKin        = ci('tsumitateKin');
+  const idxKuriageShokkan      = ci('kuriageShokkan');
+  const idxTsumitateTorikuzushi= ci('tsumitateTorikuzushi');
+  const idxJisshitsuTannen     = ci('jisshitsuTannen');
+
   log.push(`  列マップ: code=${idxCode} name=${idxName} pref=${idxPref} sainyu=${idxSainyu} saishutsu=${idxSaishutsu}`);
 
   if (idxCode < 0) {
@@ -332,6 +380,30 @@ function parseGaikyo(headers, rows, unit, log) {
       rainenDoHi: safeFloat(row[idxRainen]),
       r4_sainyuGokei: toManyen(row[idxR4S], unit),
       r4_saishutsuGokei: toManyen(row[idxR4E], unit),
+      // 人口・産業
+      jinkouNipponji:      safeInt(row[idxJinkouNipponji]),
+      jinkouKokusei:       safeInt(row[idxJinkouKokusei]),
+      sangyo1:             safeFloat(row[idxSangyo1]),
+      sangyo2:             safeFloat(row[idxSangyo2]),
+      sangyo3:             safeFloat(row[idxSangyo3]),
+      // 財政規模
+      kijunJuyou:          toManyen(row[idxKijunJuyou], unit),
+      kijunShunyu:         toManyen(row[idxKijunShunyu], unit),
+      hyojunKibo:          toManyen(row[idxHyojunKibo], unit),
+      // 財政指標（追加）
+      jisshitsuShushiHi:   safeFloat(row[idxJisshitsuShushiHi]),
+      kosaiHiHi:           safeFloat(row[idxKosaiHiHi]),
+      jisshitsuAkaji:      safeFloat(row[idxJisshitsuAkaji]),
+      renketsuAkaji:       safeFloat(row[idxRenketsuAkaji]),
+      // 収支状況
+      sainyuSaishutsuSa:   toManyen(row[idxSainyuSaishutsuSa], unit),
+      yokunen:             toManyen(row[idxYokunen], unit),
+      jisshitsuShushiGaku: toManyen(row[idxJisshitsuShushiGaku], unit),
+      tannenDo:            toManyen(row[idxTannenDo], unit),
+      tsumitateKin:        toManyen(row[idxTsumitateKin], unit),
+      kuriageShokkan:      toManyen(row[idxKuriageShokkan], unit),
+      tsumitateTorikuzushi: toManyen(row[idxTsumitateTorikuzushi], unit),
+      jisshitsuTannen:     toManyen(row[idxJisshitsuTannen], unit),
     };
   }
   log.push(`  → ${Object.keys(result).length} 団体取得（スキップ: ${skipped}行）`);
@@ -417,8 +489,13 @@ function parseSeishitsu(headers, rows, unit, log) {
 
   const idxJin = ci('jinken'), idxBuk = ci('bukken'), idxIte = ci('iten');
   const idxKok = ci('kokkosai'), idxHoj = ci('hojo');
+  const idxIjiHoshu   = ci('ijiHoshu');
+  const idxKuridashi  = ci('kuridashi');
+  const idxFututsuKen = ci('fututsuKen');
+  const idxSaigaiKen  = ci('saigaiKen');
+  const idxTsumitate  = ci('tsumitate');
 
-  log.push(`  列マップ: code=${idxCode} 人件費=${idxJin} 物件費=${idxBuk} 扶助費=${idxIte} 公債費=${idxKok}`);
+  log.push(`  列マップ: code=${idxCode} 人件費=${idxJin} 物件費=${idxBuk} 扶助費=${idxIte} 公債費=${idxKok} 維持補修=${idxIjiHoshu} 普通建設=${idxFututsuKen}`);
 
   if (idxCode < 0) { log.push(`  ❌ 団体コード列未検出`); return {}; }
 
@@ -427,11 +504,16 @@ function parseSeishitsu(headers, rows, unit, log) {
     const code = normalizeCode(row[idxCode]);
     if (!code) continue;
     result[code] = {
-      jinken:   toManyen(row[idxJin], unit) ?? 0,
-      bukken:   toManyen(row[idxBuk], unit) ?? 0,
-      iten:     toManyen(row[idxIte], unit) ?? 0,
-      kokkosai: toManyen(row[idxKok], unit) ?? 0,
-      hojo:     toManyen(row[idxHoj], unit) ?? 0,
+      jinken:     toManyen(row[idxJin], unit) ?? 0,
+      bukken:     toManyen(row[idxBuk], unit) ?? 0,
+      iten:       toManyen(row[idxIte], unit) ?? 0,
+      kokkosai:   toManyen(row[idxKok], unit) ?? 0,
+      hojo:       toManyen(row[idxHoj], unit) ?? 0,
+      ijiHoshu:   toManyen(row[idxIjiHoshu],   unit) ?? 0,
+      kuridashi:  toManyen(row[idxKuridashi],   unit) ?? 0,
+      fututsuKen: toManyen(row[idxFututsuKen],  unit) ?? 0,
+      saigaiKen:  toManyen(row[idxSaigaiKen],   unit) ?? 0,
+      tsumitate:  toManyen(row[idxTsumitate],   unit) ?? 0,
     };
   }
   log.push(`  → ${Object.keys(result).length} 団体取得`);
@@ -461,9 +543,9 @@ function mergeAll(gaikyo, sainyu, mokuteki, seishitsu) {
       .reduce((acc, k) => acc + (m[k] ?? 0), 0);
     const sonotaMokuteki = saishutsuTotal - mokutekiSum;
 
-    const seishitsuSum = ['jinken','bukken','iten','kokkosai','hojo']
+    const seishitsuSum = ['jinken','bukken','iten','kokkosai','hojo','ijiHoshu','kuridashi','fututsuKen','saigaiKen','tsumitate']
       .reduce((acc, k) => acc + (se[k] ?? 0), 0);
-    const sonotaSeishitsu = saishutsuTotal - seishitsuSum;
+    const sonotaSeishitsu = Math.max(0, saishutsuTotal - seishitsuSum);
 
     result.push({
       id: code,
@@ -483,6 +565,30 @@ function mergeAll(gaikyo, sainyu, mokuteki, seishitsu) {
       jisshitsuKosaiHi: g.jisshitsuKosaiHi,
       rainenDoHi: g.rainenDoHi,
       zaiseiRyoku: g.zaiseiRyoku,
+      // 人口・産業
+      jinkouNipponji:  g.jinkouNipponji,
+      jinkouKokusei:   g.jinkouKokusei,
+      sangyo1:         g.sangyo1,
+      sangyo2:         g.sangyo2,
+      sangyo3:         g.sangyo3,
+      // 財政規模
+      kijunJuyou:      g.kijunJuyou,
+      kijunShunyu:     g.kijunShunyu,
+      hyojunKibo:      g.hyojunKibo,
+      // 財政指標（追加）
+      jisshitsuShushiHi:   g.jisshitsuShushiHi,
+      kosaiHiHi:           g.kosaiHiHi,
+      jisshitsuAkaji:      g.jisshitsuAkaji,
+      renketsuAkaji:       g.renketsuAkaji,
+      // 収支状況
+      sainyuSaishutsuSa:   g.sainyuSaishutsuSa,
+      yokunen:             g.yokunen,
+      jisshitsuShushiGaku: g.jisshitsuShushiGaku,
+      tannenDo:            g.tannenDo,
+      tsumitateKin:        g.tsumitateKin,
+      kuriageShokkan:      g.kuriageShokkan,
+      tsumitateTorikuzushi: g.tsumitateTorikuzushi,
+      jisshitsuTannen:     g.jisshitsuTannen,
       saishuByMokuteki: {
         minsei:  m.minsei  ?? 0,
         eisei:   m.eisei   ?? 0,
@@ -495,12 +601,17 @@ function mergeAll(gaikyo, sainyu, mokuteki, seishitsu) {
         sonota:  sonotaMokuteki,
       },
       saishuBySeishitsu: {
-        jinken:   se.jinken   ?? 0,
-        bukken:   se.bukken   ?? 0,
-        iten:     se.iten     ?? 0,
-        kokkosai: se.kokkosai ?? 0,
-        hojo:     se.hojo     ?? 0,
-        sonota:   sonotaSeishitsu,
+        jinken:     se.jinken     ?? 0,
+        bukken:     se.bukken     ?? 0,
+        iten:       se.iten       ?? 0,
+        kokkosai:   se.kokkosai   ?? 0,
+        hojo:       se.hojo       ?? 0,
+        ijiHoshu:   se.ijiHoshu   ?? 0,
+        kuridashi:  se.kuridashi  ?? 0,
+        fututsuKen: se.fututsuKen ?? 0,
+        saigaiKen:  se.saigaiKen  ?? 0,
+        tsumitate:  se.tsumitate  ?? 0,
+        sonota:     sonotaSeishitsu,
       },
       zeiByZeimoku: s.zeiByZeimoku ?? {
         kojinZei: 0, hojinZei: 0, koteishisan: 0, toshibazeikinnyu: 0, sonota: 0,
