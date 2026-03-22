@@ -167,16 +167,22 @@ function extractSheet(workbook, log) {
   for (const sheetName of workbook.SheetNames) {
     const ws = workbook.Sheets[sheetName];
 
+    // シートの実際のセル範囲と最初のセルを診断ログに出す
+    const wsRef = ws['!ref'] || '(なし)';
+    const cellA1 = ws['A1'];
+    const cellA1Val = cellA1 ? `type=${cellA1.t} v=${cellA1.v} w=${cellA1.w}` : '(空)';
+    log.push(`  シート「${sheetName}」 !ref=${wsRef}  A1=${cellA1Val}`);
+
     // raw:true で数値をそのまま取得（raw:false だと書式次第で空文字になる）
     const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
 
-    if (raw.length === 0) continue;
+    if (raw.length === 0) { log.push(`    → sheet_to_json が空配列を返した`); continue; }
 
-    // 先頭6行をプレビュー
-    const maxColPreview = Math.max(0, ...raw.slice(0, 6).map(r => (r || []).length));
-    log.push(`  シート「${sheetName}」(${raw.length}行 × 最大${maxColPreview}列)`);
-    raw.slice(0, Math.min(6, raw.length)).forEach((r, i) => {
-      const preview = (r || []).slice(0, 8).map(v => (v === null ? '' : String(v)).slice(0, 14)).join(' | ');
+    // 先頭10行をプレビュー（列は12個まで）
+    const maxColPreview = Math.max(0, ...raw.slice(0, 10).map(r => (r || []).length));
+    log.push(`  (${raw.length}行 × 最大${maxColPreview}列)`);
+    raw.slice(0, Math.min(10, raw.length)).forEach((r, i) => {
+      const preview = (r || []).slice(0, 12).map(v => (v === null ? '∅' : String(v)).slice(0, 14)).join(' | ');
       log.push(`    行${i}: ${preview}`);
     });
 
