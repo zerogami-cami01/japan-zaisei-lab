@@ -1,14 +1,8 @@
 // 令和5年度 地方自治体決算ターミナル - Main Application
-
-import { MUNICIPALITIES as BASE_DATA, PREFS, formatManyen, formatPercent, formatNumber } from './data.js';
-import {
-  renderEntityCard, renderDetailHeader, renderKpiCard, renderKpiGroup,
-  renderMokutekiTable, renderZaiseiShihyoTable, renderZeiTable, renderSainyuTable
-} from './components.js';
-import { importFromExcel } from './importer.js';
+// (グローバルスクリプト版 — ES module非使用)
 
 // State
-let allMunicipalities = [...BASE_DATA]; // mutable: 読み込み後に追加される
+let allMunicipalities = [...MUNICIPALITIES]; // mutable: 読み込み後に追加される
 let currentPref = null;
 let searchQuery = '';
 let viewMode = 'grid'; // grid | compact | list

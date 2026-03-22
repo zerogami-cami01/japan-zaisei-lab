@@ -1,7 +1,7 @@
 // 令和5年度 地方自治体決算データ（サンプルデータ）
 // 出典：総務省「令和5年度 市町村別決算状況調」
 
-export const PREFS = [
+const PREFS = [
   "北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県",
   "茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県",
   "新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県",
@@ -11,7 +11,7 @@ export const PREFS = [
   "熊本県","大分県","宮崎県","鹿児島県","沖縄県"
 ];
 
-export const MUNICIPALITIES = [
+const MUNICIPALITIES = [
   // 北海道
   {
     id: "01100", name: "札幌市", pref: "北海道", type: "政令指定都市",
@@ -468,7 +468,7 @@ export const MUNICIPALITIES = [
   }
 ];
 
-export function formatManyen(value) {
+function formatManyen(value) {
   if (value === null || value === undefined) return '—';
   const oku = Math.abs(value) / 10000;
   if (oku >= 10000) {
@@ -480,12 +480,12 @@ export function formatManyen(value) {
   }
 }
 
-export function formatPercent(value) {
+function formatPercent(value) {
   if (value === null || value === undefined) return '—';
   return value.toFixed(1) + '%';
 }
 
-export function formatNumber(value) {
+function formatNumber(value) {
   if (value === null || value === undefined) return '—';
   return value.toLocaleString('ja-JP');
 }

@@ -504,7 +504,7 @@ function mergeAll(gaikyo, sainyu, mokuteki, seishitsu) {
  * @param {string} unit  - '千円' | '万円' | '百万円'
  * @param {Set<string>} skipIds - スキップするIDセット
  */
-export async function importFromExcel(files, unit = '千円', skipIds = new Set()) {
+async function importFromExcel(files, unit = '千円', skipIds = new Set()) {
   const log = [];
 
   async function loadAll(fileList, label) {

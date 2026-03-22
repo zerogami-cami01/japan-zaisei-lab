@@ -1,9 +1,8 @@
 // UI Components for 令和5年度 地方自治体決算ターミナル
 
-import { formatManyen, formatPercent, formatNumber } from './data.js';
 
 /** KPI Card */
-export function renderKpiCard({ label, value, valueClass = '', r4Value = null, unit = '' }) {
+function renderKpiCard({ label, value, valueClass = '', r4Value = null, unit = '' }) {
   let deltaHtml = '';
   if (r4Value !== null && r4Value !== undefined) {
     const diff = value - r4Value;
@@ -23,7 +22,7 @@ export function renderKpiCard({ label, value, valueClass = '', r4Value = null, u
 }
 
 /** KPI Group */
-export function renderKpiGroup(title, cards) {
+function renderKpiGroup(title, cards) {
   return `<div class="kpi-group">
     <div class="kpi-group-title">${title}</div>
     <div class="kpi-cards">${cards.join('')}</div>
@@ -31,7 +30,7 @@ export function renderKpiGroup(title, cards) {
 }
 
 /** Entity Card for browse */
-export function renderEntityCard(item) {
+function renderEntityCard(item) {
   const r4Diff = item.sainyuGokei - item.r4_sainyuGokei;
   const r4DiffPct = ((r4Diff / item.r4_sainyuGokei) * 100).toFixed(1);
   const diffClass = r4Diff >= 0 ? 'positive' : 'negative';
@@ -69,7 +68,7 @@ export function renderEntityCard(item) {
 }
 
 /** Detail Header */
-export function renderDetailHeader(item) {
+function renderDetailHeader(item) {
   return `<div class="detail-header">
     <div class="detail-trail">決算ターミナル / ${item.pref} / ${item.name}</div>
     <div class="detail-title">${item.name}</div>
@@ -99,7 +98,7 @@ export function renderDetailHeader(item) {
 }
 
 /** Expenditure by purpose table */
-export function renderMokutekiTable(item) {
+function renderMokutekiTable(item) {
   const data = [
     { label: '民生費', value: item.saishuByMokuteki.minsei },
     { label: '衛生費', value: item.saishuByMokuteki.eisei },
@@ -138,7 +137,7 @@ export function renderMokutekiTable(item) {
 }
 
 /** Financial indicators table */
-export function renderZaiseiShihyoTable(item) {
+function renderZaiseiShihyoTable(item) {
   const indicators = [
     {
       label: '財政力指数',
@@ -190,7 +189,7 @@ export function renderZaiseiShihyoTable(item) {
 }
 
 /** Tax breakdown table */
-export function renderZeiTable(item) {
+function renderZeiTable(item) {
   const data = [
     { label: '個人住民税', value: item.zeiByZeimoku.kojinZei },
     { label: '法人住民税', value: item.zeiByZeimoku.hojinZei },
@@ -227,7 +226,7 @@ export function renderZeiTable(item) {
 }
 
 /** Revenue structure */
-export function renderSainyuTable(item) {
+function renderSainyuTable(item) {
   const data = [
     { label: '地方税', value: item.chihoZei },
     { label: '地方交付税', value: item.chihoKofuzei },
