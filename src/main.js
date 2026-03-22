@@ -6,6 +6,7 @@ let allMunicipalities = [...MUNICIPALITIES]; // mutable: 読み込み後に追�
 let currentPref = null;
 let searchQuery = '';
 let viewMode = 'grid'; // grid | compact | list
+let sortKey = 'code';   // current sort key
 let chartsInitialized = {};
 
 // DOM refs
@@ -96,10 +97,14 @@ function initSearch() {
     searchQuery = searchInput.value.trim();
     renderBrowse();
   });
+  document.getElementById('sortSelect').addEventListener('change', e => {
+    sortKey = e.target.value;
+    renderBrowse();
+  });
 }
 
 function getFilteredList() {
-  return allMunicipalities.filter(item => {
+  const list = allMunicipalities.filter(item => {
     const matchPref = !currentPref || item.pref === currentPref;
     const q = searchQuery.toLowerCase();
     const matchQuery = !q ||
@@ -109,6 +114,15 @@ function getFilteredList() {
       item.type.includes(searchQuery);
     return matchPref && matchQuery;
   });
+
+  const [field, dir] = sortKey.includes('-') ? sortKey.split('-') : [sortKey, 'asc'];
+  list.sort((a, b) => {
+    if (field === 'code') return a.id.localeCompare(b.id);
+    const av = a[field] ?? -Infinity;
+    const bv = b[field] ?? -Infinity;
+    return dir === 'desc' ? bv - av : av - bv;
+  });
+  return list;
 }
 
 // ===== FILTER BAR =====

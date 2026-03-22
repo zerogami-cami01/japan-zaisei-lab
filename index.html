@@ -6,7 +6,7 @@
   <title>令和5年度 地方自治体決算ターミナル</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="src/style.css?v=9">
+  <link rel="stylesheet" href="src/style.css?v=10">
 </head>
 <body>
 
@@ -91,6 +91,15 @@
     <span class="search-prompt">&#62; 検索:</span>
     <input id="searchInput" type="text" placeholder="自治体名・都道府県名で検索...">
     <span id="searchCount"></span>
+    <select id="sortSelect">
+      <option value="code">団体コード順</option>
+      <option value="jinkou-desc">人口 多い順</option>
+      <option value="jinkou-asc">人口 少ない順</option>
+      <option value="sainyu-desc">歳入 多い順</option>
+      <option value="sainyu-asc">歳入 少ない順</option>
+      <option value="zaiseiRyoku-desc">財政力指数 高い順</option>
+      <option value="zaiseiRyoku-asc">財政力指数 低い順</option>
+    </select>
   </div>
 
   <!-- FILTERBAR -->
@@ -142,10 +151,10 @@
   <!-- SheetJS (Excel読み込み) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <!-- App (通常スクリプト — htmlpreview.github.io対応) -->
-  <script src="src/data.js?v=9"></script>
-  <script src="src/components.js?v=9"></script>
-  <script src="src/importer.js?v=9"></script>
-  <script src="src/main.js?v=9"></script>
+  <script src="src/data.js?v=10"></script>
+  <script src="src/components.js?v=10"></script>
+  <script src="src/importer.js?v=10"></script>
+  <script src="src/main.js?v=10"></script>
 
 </body>
 </html>

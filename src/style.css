@@ -163,6 +163,19 @@ body {
   white-space: nowrap;
 }
 
+/* Sort select in searchbar */
+#sortSelect {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-accent);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 3px 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+#sortSelect:focus { outline: none; border-color: var(--accent-orange); }
+
 /* Filter row */
 #filterbar {
   position: fixed;
