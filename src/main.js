@@ -412,17 +412,33 @@ function initImportModal() {
       logEl.textContent = log.join('\n');
 
       if (municipalities.length === 0) {
-        status.textContent = '⚠ 新規データなし — ログを確認してください';
+        status.textContent = '⚠ データなし — ログを確認してください';
         status.style.color = 'var(--accent-yellow)';
         logEl.hidden = false;
       } else {
-        // データを追加して再描画
-        allMunicipalities.push(...municipalities);
+        // Upsert: 既存IDは上書き、新規は追加
+        const importedMap = new Map(municipalities.map(m => [m.id, m]));
+        let updatedCount = 0;
+        allMunicipalities = allMunicipalities.map(m => {
+          if (importedMap.has(m.id)) {
+            updatedCount++;
+            const updated = importedMap.get(m.id);
+            importedMap.delete(m.id);
+            return updated;
+          }
+          return m;
+        });
+        const newOnes = [...importedMap.values()];
+        allMunicipalities.push(...newOnes);
+
         currentPref = null;
         rebuildFilterBar();
         renderBrowse();
 
-        status.textContent = `✅ ${municipalities.length} 団体を追加（合計 ${allMunicipalities.length} 団体）`;
+        const parts = [];
+        if (newOnes.length) parts.push(`新規 ${newOnes.length} 団体`);
+        if (updatedCount) parts.push(`更新 ${updatedCount} 団体`);
+        status.textContent = `✅ ${parts.join('、')}（合計 ${allMunicipalities.length} 団体）`;
         status.style.color = 'var(--accent-green)';
       }
     } catch (err) {

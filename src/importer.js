@@ -549,10 +549,10 @@ async function importFromExcel(files, unit = '千円', skipIds = new Set()) {
   const seishitsuData = se.headers.length ? parseSeishitsu(se.headers, se.rows, unit, log) : {};
 
   log.push('\n===== マージ =====');
-  let merged = mergeAll(gaikyoData, sainyuData, mokutekiData, seishitsuData);
-  const before = merged.length;
-  merged = merged.filter(m => !skipIds.has(m.id));
-  log.push(`✅ 新規追加: ${merged.length} 団体（スキップ: ${before - merged.length}）`);
+  const merged = mergeAll(gaikyoData, sainyuData, mokutekiData, seishitsuData);
+  const newCount = merged.filter(m => !skipIds.has(m.id)).length;
+  const updateCount = merged.length - newCount;
+  log.push(`✅ 合計 ${merged.length} 団体（新規: ${newCount}、更新: ${updateCount}）`);
 
   return { municipalities: merged, log };
 }
