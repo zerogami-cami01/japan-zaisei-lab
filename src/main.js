@@ -1,12 +1,14 @@
 // 令和5年度 地方自治体決算ターミナル - Main Application
 
-import { MUNICIPALITIES, PREFS, formatManyen, formatPercent, formatNumber } from './data.js';
+import { MUNICIPALITIES as BASE_DATA, PREFS, formatManyen, formatPercent, formatNumber } from './data.js';
 import {
   renderEntityCard, renderDetailHeader, renderKpiCard, renderKpiGroup,
   renderMokutekiTable, renderZaiseiShihyoTable, renderZeiTable, renderSainyuTable
 } from './components.js';
+import { importFromExcel } from './importer.js';
 
 // State
+let allMunicipalities = [...BASE_DATA]; // mutable: 読み込み後に追加される
 let currentPref = null;
 let searchQuery = '';
 let viewMode = 'grid'; // grid | compact | list
@@ -26,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initViewBtns();
   window.addEventListener('hashchange', handleRoute);
   handleRoute();
+  initImportModal();
   // Simulate loading
   setTimeout(() => {
     showPanel('browse');
@@ -63,7 +66,7 @@ function showDetailView(id) {
   filterbar.style.display = 'none';
   document.getElementById('main').style.paddingTop =
     `calc(var(--topbar-height) + var(--searchbar-height))`;
-  const item = MUNICIPALITIES.find(m => m.id === id);
+  const item = allMunicipalities.find(m => m.id === id);
   if (!item) {
     showPanel('empty');
     return;
@@ -96,7 +99,7 @@ function initSearch() {
 }
 
 function getFilteredList() {
-  return MUNICIPALITIES.filter(item => {
+  return allMunicipalities.filter(item => {
     const matchPref = !currentPref || item.pref === currentPref;
     const q = searchQuery.toLowerCase();
     const matchQuery = !q ||
@@ -123,7 +126,7 @@ function initFilterBar() {
   filterbar.appendChild(allBtn);
 
   // Only show prefs that have data
-  const dataPrefs = [...new Set(MUNICIPALITIES.map(m => m.pref))];
+  const dataPrefs = [...new Set(allMunicipalities.map(m => m.pref))];
   dataPrefs.forEach(pref => {
     const btn = document.createElement('button');
     btn.className = 'pref-filter';
@@ -132,6 +135,11 @@ function initFilterBar() {
     btn.addEventListener('click', () => setPrefFilter(pref, btn));
     filterbar.appendChild(btn);
   });
+}
+
+function rebuildFilterBar() {
+  filterbar.innerHTML = '';
+  initFilterBar();
 }
 
 function setPrefFilter(pref, btn) {
@@ -353,4 +361,82 @@ function renderCharts(item) {
       }]
     });
   }
+}
+
+// ===== IMPORT MODAL =====
+function initImportModal() {
+  const modal   = document.getElementById('importModal');
+  const openBtn = document.getElementById('importBtn');
+  const closeBtn = document.getElementById('importClose');
+  const runBtn  = document.getElementById('importRun');
+  const status  = document.getElementById('importStatus');
+  const logEl   = document.getElementById('importLog');
+
+  // ファイル選択のラベル更新
+  ['gaikyo', 'sainyu', 'mokuteki', 'seishitsu'].forEach(key => {
+    const input = document.getElementById(`file-${key}`);
+    const nameEl = document.getElementById(`name-${key}`);
+    input.addEventListener('change', () => {
+      nameEl.textContent = input.files.length
+        ? [...input.files].map(f => f.name).join(', ')
+        : '未選択';
+    });
+  });
+
+  openBtn.addEventListener('click', () => { modal.hidden = false; });
+  closeBtn.addEventListener('click', () => { modal.hidden = true; });
+  modal.addEventListener('click', e => { if (e.target === modal) modal.hidden = true; });
+
+  runBtn.addEventListener('click', async () => {
+    const gaikyoFiles    = [...(document.getElementById('file-gaikyo').files    || [])];
+    const sainyuFiles    = [...(document.getElementById('file-sainyu').files    || [])];
+    const mokutekiFiles  = [...(document.getElementById('file-mokuteki').files  || [])];
+    const seishitsuFiles = [...(document.getElementById('file-seishitsu').files || [])];
+
+    if (!gaikyoFiles.length) {
+      status.textContent = '⚠ (1)概況 ファイルは必須です';
+      status.style.color = 'var(--accent-red)';
+      return;
+    }
+
+    const unit = document.querySelector('input[name="unit"]:checked').value;
+    const existingIds = new Set(allMunicipalities.map(m => m.id));
+
+    runBtn.disabled = true;
+    status.textContent = '処理中...';
+    status.style.color = 'var(--text-secondary)';
+    logEl.hidden = false;
+    logEl.textContent = '';
+
+    try {
+      const { municipalities, log } = await importFromExcel(
+        { gaikyo: gaikyoFiles, sainyu: sainyuFiles, mokuteki: mokutekiFiles, seishitsu: seishitsuFiles },
+        unit,
+        existingIds
+      );
+
+      logEl.textContent = log.join('\n');
+
+      if (municipalities.length === 0) {
+        status.textContent = '新規データなし（全て既存）';
+        status.style.color = 'var(--accent-yellow)';
+      } else {
+        // データを追加して再描画
+        allMunicipalities.push(...municipalities);
+        currentPref = null;
+        rebuildFilterBar();
+        renderBrowse();
+
+        status.textContent = `✅ ${municipalities.length} 団体を追加（合計 ${allMunicipalities.length} 団体）`;
+        status.style.color = 'var(--accent-green)';
+      }
+    } catch (err) {
+      logEl.textContent = String(err);
+      status.textContent = '❌ エラーが発生しました';
+      status.style.color = 'var(--accent-red)';
+      console.error(err);
+    } finally {
+      runBtn.disabled = false;
+    }
+  });
 }

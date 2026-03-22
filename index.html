@@ -17,8 +17,69 @@
     <div class="topbar-title">地方自治体決算ターミナル</div>
     <div class="topbar-subtitle">令和5年度（2023年度）</div>
     <div class="topbar-spacer"></div>
+    <button id="importBtn" class="topbar-import-btn">&#8659; データ読込</button>
     <div class="topbar-badge">R5 KESSAN</div>
   </header>
+
+  <!-- IMPORT MODAL -->
+  <div id="importModal" class="import-modal-overlay" hidden>
+    <div class="import-modal">
+      <div class="import-modal-header">
+        <span class="import-modal-title">&#8659; Excel データ読込</span>
+        <span class="import-modal-sub">総務省「市町村別決算状況調」</span>
+        <button id="importClose" class="import-close">&#10005;</button>
+      </div>
+
+      <div class="import-unit-row">
+        <span class="import-label">金額単位:</span>
+        <label><input type="radio" name="unit" value="千円" checked> 千円</label>
+        <label><input type="radio" name="unit" value="万円"> 万円</label>
+        <label><input type="radio" name="unit" value="百万円"> 百万円</label>
+      </div>
+
+      <div class="import-files">
+        <div class="import-file-row">
+          <div class="import-file-label"><span class="import-num">(1)</span> 概況</div>
+          <label class="import-file-btn">
+            ファイルを選択
+            <input type="file" id="file-gaikyo" accept=".xlsx,.xls" multiple>
+          </label>
+          <span class="import-file-names" id="name-gaikyo">未選択</span>
+        </div>
+        <div class="import-file-row">
+          <div class="import-file-label"><span class="import-num">(2)</span> 歳入内訳</div>
+          <label class="import-file-btn">
+            ファイルを選択
+            <input type="file" id="file-sainyu" accept=".xlsx,.xls" multiple>
+          </label>
+          <span class="import-file-names" id="name-sainyu">未選択</span>
+        </div>
+        <div class="import-file-row">
+          <div class="import-file-label"><span class="import-num">(3)</span> 目的別歳出</div>
+          <label class="import-file-btn">
+            ファイルを選択
+            <input type="file" id="file-mokuteki" accept=".xlsx,.xls" multiple>
+          </label>
+          <span class="import-file-names" id="name-mokuteki">未選択</span>
+        </div>
+        <div class="import-file-row">
+          <div class="import-file-label"><span class="import-num">(4)</span> 性質別歳出</div>
+          <label class="import-file-btn">
+            ファイルを選択
+            <input type="file" id="file-seishitsu" accept=".xlsx,.xls" multiple>
+          </label>
+          <span class="import-file-names" id="name-seishitsu">未選択</span>
+        </div>
+      </div>
+
+      <div id="importLog" class="import-log" hidden></div>
+
+      <div class="import-modal-footer">
+        <button id="importRun" class="import-run-btn">読み込む</button>
+        <span id="importStatus" class="import-status"></span>
+      </div>
+    </div>
+  </div>
 
   <!-- BACKBAR (detail view) -->
   <div id="backbar">
@@ -78,6 +139,8 @@
 
   <!-- ECharts CDN -->
   <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <!-- SheetJS (Excel読み込み) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <!-- Main App -->
   <script type="module" src="src/main.js"></script>
 
