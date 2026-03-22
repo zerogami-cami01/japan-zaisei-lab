@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>令和5年度 地方自治体決算ターミナル</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header id="topbar">
+    <div class="topbar-logo">JAPAN ZAISEI LAB</div>
+    <div style="width:1px;height:20px;background:var(--border-accent)"></div>
+    <div class="topbar-title">地方自治体決算ターミナル</div>
+    <div class="topbar-subtitle">令和5年度（2023年度）</div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-badge">R5 KESSAN</div>
+  </header>
+
+  <!-- BACKBAR (detail view) -->
+  <div id="backbar">
+    <button id="backBtn">&#9664; 一覧に戻る</button>
+  </div>
+
+  <!-- SEARCHBAR -->
+  <div id="searchbar">
+    <span class="search-prompt">&#62; 検索:</span>
+    <input id="searchInput" type="text" placeholder="自治体名・都道府県名で検索...">
+    <span id="searchCount"></span>
+  </div>
+
+  <!-- FILTERBAR -->
+  <div id="filterbar"></div>
+
+  <!-- MAIN CONTENT -->
+  <main id="main">
+
+    <!-- LOADING -->
+    <div id="panel-loading" class="panel active">
+      <div class="loading-spinner">▌</div>
+      <div class="loading-text">データ読み込み中...</div>
+    </div>
+
+    <!-- EMPTY -->
+    <div id="panel-empty" class="panel">
+      <div class="empty-icon">[ 404 ]</div>
+      <div class="empty-text">自治体が見つかりません</div>
+    </div>
+
+    <!-- BROWSE -->
+    <div id="panel-browse" class="panel">
+      <div class="view-controls">
+        <button class="view-btn active" data-view="grid">&#9632;&#9632; グリッド</button>
+        <button class="view-btn" data-view="compact">&#9632;&#9632;&#9632; コンパクト</button>
+        <button class="view-btn" data-view="list">&#8801; リスト</button>
+      </div>
+      <div id="entityGrid" class="entity-grid"></div>
+    </div>
+
+    <!-- DETAIL -->
+    <div id="panel-detail" class="panel"></div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer id="footer">
+    <span class="footer-text">出典：総務省「令和5年度 市町村別決算状況調」</span>
+    <span class="footer-text">|</span>
+    <a class="footer-link" href="https://www.soumu.go.jp/iken/kessan_jokyo_1.html" target="_blank" rel="noopener">
+      総務省データソース
+    </a>
+    <div style="flex:1"></div>
+    <span class="footer-text">&copy; 2024 Japan Zaisei Lab</span>
+  </footer>
+
+  <!-- ECharts CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <!-- Main App -->
+  <script type="module" src="src/main.js"></script>
+
+</body>
+</html>
