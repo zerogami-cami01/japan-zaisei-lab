@@ -151,7 +151,7 @@ function buildHeaders(rawRows, headerRowIdx, nextDataRow) {
   const maxCols = Math.max(...hRows.map(r => r.length));
   const merged = [];
   for (let c = 0; c < maxCols; c++) {
-    const parts = hRows.map(r => String(r[c] || '').trim()).filter(Boolean);
+    const parts = hRows.map(r => (r && r[c] !== null && r[c] !== undefined) ? String(r[c]).trim() : '').filter(Boolean);
     merged.push(parts.join(''));
   }
   return merged;
@@ -166,21 +166,24 @@ function extractSheet(workbook, log) {
 
   for (const sheetName of workbook.SheetNames) {
     const ws = workbook.Sheets[sheetName];
-    const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
+
+    // raw:true で数値をそのまま取得（raw:false だと書式次第で空文字になる）
+    const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
 
     if (raw.length === 0) continue;
 
-    // 先頭20行を表示
-    log.push(`  シート「${sheetName}」(${raw.length}行 × 最大${Math.max(...raw.slice(0,5).map(r=>r.length))}列)`);
+    // 先頭6行をプレビュー
+    const maxColPreview = Math.max(0, ...raw.slice(0, 6).map(r => (r || []).length));
+    log.push(`  シート「${sheetName}」(${raw.length}行 × 最大${maxColPreview}列)`);
     raw.slice(0, Math.min(6, raw.length)).forEach((r, i) => {
-      const preview = r.slice(0, 8).map(v => String(v).slice(0, 12)).join(' | ');
+      const preview = (r || []).slice(0, 8).map(v => (v === null ? '' : String(v)).slice(0, 14)).join(' | ');
       log.push(`    行${i}: ${preview}`);
     });
 
-    // ヘッダー行を探す（先頭25行）
+    // ヘッダー行を探す（先頭50行）
     let headerRowIdx = -1;
-    for (let i = 0; i < Math.min(raw.length, 25); i++) {
-      const rowStr = raw[i].map(v => String(v)).join(' ');
+    for (let i = 0; i < Math.min(raw.length, 50); i++) {
+      const rowStr = (raw[i] || []).map(v => v === null ? '' : String(v)).join(' ');
       if (HEADER_KW.some(kw => rowStr.includes(kw))) {
         headerRowIdx = i;
         break;
@@ -188,19 +191,20 @@ function extractSheet(workbook, log) {
     }
 
     if (headerRowIdx === -1) {
-      log.push(`  ⚠ ヘッダー行未検出`);
+      log.push(`  ⚠ ヘッダー行未検出（先頭50行に「団体コード」等なし）`);
       continue;
     }
 
-    // データ開始行を探す（ヘッダー直後1〜3行以内に5桁コードが来るはず）
+    // データ開始行を探す（ヘッダー直後に5桁コードが来る行）
     let dataStartIdx = headerRowIdx + 1;
-    for (let i = headerRowIdx + 1; i < Math.min(raw.length, headerRowIdx + 5); i++) {
-      const codeCandidate = String(raw[i][0] || raw[i][1] || '').replace(/\.0+$/, '').trim();
+    for (let i = headerRowIdx + 1; i < Math.min(raw.length, headerRowIdx + 6); i++) {
+      const row = raw[i] || [];
+      const codeCandidate = String(row[0] ?? row[1] ?? '').replace(/\.0+$/, '').trim();
       if (/^\d{4,6}$/.test(codeCandidate.replace(/\D/g, ''))) {
         dataStartIdx = i;
         break;
       }
-      dataStartIdx = i; // ヘッダーが複数行の可能性
+      dataStartIdx = i + 1; // ヘッダーが複数行の可能性
     }
 
     const headers = buildHeaders(raw, headerRowIdx, dataStartIdx);
@@ -212,11 +216,15 @@ function extractSheet(workbook, log) {
     return { headers, rows, sheetName };
   }
 
-  // フォールバック
-  log.push(`  ⚠ 有効なシートが見つかりません。先頭シートを使用します`);
-  const ws = workbook.Sheets[workbook.SheetNames[0]];
-  const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
-  return { headers: raw[0]?.map(h => String(h).trim()) || [], rows: raw.slice(1), sheetName: workbook.SheetNames[0] };
+  // フォールバック: 先頭シートの先頭行をヘッダー扱い
+  log.push(`  ⚠ ヘッダー行未検出。先頭シートの先頭行をヘッダーとして使用します`);
+  const wsFb = workbook.Sheets[workbook.SheetNames[0]];
+  const rawFb = XLSX.utils.sheet_to_json(wsFb, { header: 1, defval: null, raw: true });
+  return {
+    headers: (rawFb[0] || []).map(h => h === null ? '' : String(h).trim()),
+    rows: rawFb.slice(1),
+    sheetName: workbook.SheetNames[0]
+  };
 }
 
 /**
@@ -247,13 +255,16 @@ function findColIdx(headers, candidates) {
  * 全データ行をスキャンして、値が5桁の数字に見える列を探す。
  */
 function autoDetectCodeCol(headers, rows) {
-  const colCount = headers.length;
-  for (let c = 0; c < Math.min(colCount, 10); c++) {
-    const hits = rows.slice(0, 20).filter(r => {
-      const v = String(r[c] || '').replace(/\.0+$/, '').trim();
-      return CODE_RE.test(v.replace(/\D/g, '').slice(0, 5)) && v.replace(/\D/g, '').length >= 5;
+  // headers が少ない場合でも全列を試す
+  const colCount = Math.max(headers.length, 10);
+  for (let c = 0; c < Math.min(colCount, 15); c++) {
+    const hits = rows.slice(0, 30).filter(r => {
+      if (!r) return false;
+      const v = String(r[c] ?? '').replace(/\.0+$/, '').trim();
+      const digits = v.replace(/\D/g, '');
+      return digits.length >= 4 && digits.length <= 6 && /^\d+$/.test(digits);
     }).length;
-    if (hits >= 3) return c;
+    if (hits >= 5) return c;
   }
   return -1;
 }
