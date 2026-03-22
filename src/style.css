@@ -771,6 +771,7 @@ body::after {
 }
 
 /* ===== IMPORT MODAL ===== */
+.import-modal-overlay[hidden] { display: none; }
 .import-modal-overlay {
   position: fixed;
   inset: 0;
