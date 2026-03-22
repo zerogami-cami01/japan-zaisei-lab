@@ -244,69 +244,53 @@ function renderSeishitsuTable(item) {
 
 /** Financial indicators table (expanded) */
 function renderZaiseiShihyoTable(item) {
-  const zr = item.zaiseiRyoku ?? 0;
-  const gi = item.ginsokuHi ?? 0;
-  const ki = item.jisshitsuKosaiHi ?? 0;
-  const rn = item.rainenDoHi ?? 0;
+  // Only include indicators where we have actual data
+  const indicators = [];
 
-  const indicators = [
-    {
-      label: '財政力指数',
-      value: zr.toFixed(2),
-      note: '1.0以上が自立度高',
-      barW: Math.min(100, zr * 80),
-      fillClass: zr >= 1.0 ? 'fill-good' : zr >= 0.7 ? 'fill-warn' : 'fill-bad'
-    },
-    {
-      label: '経常収支比率',
-      value: fmtPct(item.ginsokuHi),
-      note: '75〜80%が理想、90%超は硬直',
-      barW: Math.min(100, gi),
-      fillClass: gi <= 80 ? 'fill-good' : gi <= 90 ? 'fill-warn' : 'fill-bad'
-    },
-    {
-      label: '実質公債費比率',
-      value: fmtPct(item.jisshitsuKosaiHi),
-      note: '18%未満が目安',
-      barW: Math.min(100, ki * 4),
-      fillClass: ki < 12 ? 'fill-good' : ki < 18 ? 'fill-warn' : 'fill-bad'
-    },
-    {
-      label: '実質収支比率',
-      value: fmtPct(item.jisshitsuShushiHi),
-      note: '黒字が望ましい',
-      barW: Math.min(100, Math.max(0, (item.jisshitsuShushiHi ?? 0) * 10)),
-      fillClass: (item.jisshitsuShushiHi ?? 0) >= 0 ? 'fill-good' : 'fill-bad'
-    },
-    {
-      label: '公債費負担比率',
-      value: fmtPct(item.kosaiHiHi),
-      note: '15%以下が目安',
-      barW: Math.min(100, (item.kosaiHiHi ?? 0) * 5),
-      fillClass: (item.kosaiHiHi ?? 0) <= 15 ? 'fill-good' : (item.kosaiHiHi ?? 0) <= 20 ? 'fill-warn' : 'fill-bad'
-    },
-    {
-      label: '実質赤字比率',
-      value: item.jisshitsuAkaji != null ? fmtPct(item.jisshitsuAkaji) : '―（黒字）',
-      note: '赤字なしが理想',
-      barW: Math.min(100, (item.jisshitsuAkaji ?? 0) * 5),
-      fillClass: (item.jisshitsuAkaji ?? 0) <= 0 ? 'fill-good' : 'fill-bad'
-    },
-    {
-      label: '連結実質赤字比率',
-      value: item.renketsuAkaji != null ? fmtPct(item.renketsuAkaji) : '―（黒字）',
-      note: '赤字なしが理想',
-      barW: Math.min(100, (item.renketsuAkaji ?? 0) * 5),
-      fillClass: (item.renketsuAkaji ?? 0) <= 0 ? 'fill-good' : 'fill-bad'
-    },
-    {
-      label: '将来負担比率',
-      value: rn > 0 ? fmtPct(item.rainenDoHi) : '―（該当なし）',
-      note: '350%未満が目安',
-      barW: Math.min(100, rn / 3.5),
-      fillClass: rn < 200 ? 'fill-good' : rn < 350 ? 'fill-warn' : 'fill-bad'
-    },
-  ];
+  if (item.zaiseiRyoku != null) {
+    const v = item.zaiseiRyoku;
+    indicators.push({ label: '財政力指数', value: v.toFixed(2), note: '1.0以上が自立度高',
+      barW: Math.min(100, v * 80), fillClass: v >= 1.0 ? 'fill-good' : v >= 0.7 ? 'fill-warn' : 'fill-bad' });
+  }
+  if (item.ginsokuHi != null) {
+    const v = item.ginsokuHi;
+    indicators.push({ label: '経常収支比率', value: fmtPct(v), note: '75〜80%が理想、90%超は硬直',
+      barW: Math.min(100, v), fillClass: v <= 80 ? 'fill-good' : v <= 90 ? 'fill-warn' : 'fill-bad' });
+  }
+  if (item.jisshitsuKosaiHi != null) {
+    const v = item.jisshitsuKosaiHi;
+    indicators.push({ label: '実質公債費比率', value: fmtPct(v), note: '18%未満が目安',
+      barW: Math.min(100, v * 4), fillClass: v < 12 ? 'fill-good' : v < 18 ? 'fill-warn' : 'fill-bad' });
+  }
+  if (item.jisshitsuShushiHi != null) {
+    const v = item.jisshitsuShushiHi;
+    indicators.push({ label: '実質収支比率', value: fmtPct(v), note: '黒字が望ましい',
+      barW: Math.min(100, Math.max(0, v * 10)), fillClass: v >= 0 ? 'fill-good' : 'fill-bad' });
+  }
+  if (item.kosaiHiHi != null) {
+    const v = item.kosaiHiHi;
+    indicators.push({ label: '公債費負担比率', value: fmtPct(v), note: '15%以下が目安',
+      barW: Math.min(100, v * 5), fillClass: v <= 15 ? 'fill-good' : v <= 20 ? 'fill-warn' : 'fill-bad' });
+  }
+  if (item.jisshitsuAkaji != null) {
+    const v = item.jisshitsuAkaji;
+    indicators.push({ label: '実質赤字比率', value: v <= 0 ? '―（黒字）' : fmtPct(v), note: '赤字なしが理想',
+      barW: Math.min(100, Math.max(0, v * 5)), fillClass: v <= 0 ? 'fill-good' : 'fill-bad' });
+  }
+  if (item.renketsuAkaji != null) {
+    const v = item.renketsuAkaji;
+    indicators.push({ label: '連結実質赤字比率', value: v <= 0 ? '―（黒字）' : fmtPct(v), note: '赤字なしが理想',
+      barW: Math.min(100, Math.max(0, v * 5)), fillClass: v <= 0 ? 'fill-good' : 'fill-bad' });
+  }
+  if (item.rainenDoHi != null) {
+    const v = item.rainenDoHi;
+    indicators.push({ label: '将来負担比率', value: v <= 0 ? '―（該当なし）' : fmtPct(v), note: '350%未満が目安',
+      barW: Math.min(100, v / 3.5), fillClass: v < 200 ? 'fill-good' : v < 350 ? 'fill-warn' : 'fill-bad' });
+  }
+
+  if (!indicators.length) {
+    return `<div style="padding:12px;color:var(--text-muted);font-size:11px">財政指標データ未取得 — (1)概況ファイルを取り込むと表示されます</div>`;
+  }
 
   const rows = indicators.map(ind => `<tr>
     <td>${ind.label}</td>
