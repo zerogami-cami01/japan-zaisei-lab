@@ -216,7 +216,7 @@ body {
 }
 
 /* Panels */
-.panel { display: none; }
+.panel:not(.active) { display: none !important; }
 .panel.active { display: block; }
 
 /* ===== LOADING ===== */
